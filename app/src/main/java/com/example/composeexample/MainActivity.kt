@@ -5,17 +5,13 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
 import com.example.composeexample.ui.theme.ComposeExampleTheme
-import com.example.composeexample.ui.theme.White
 
 class MainActivity : ComponentActivity() {
 
@@ -27,11 +23,21 @@ class MainActivity : ComponentActivity() {
         themeViewModel.isDarkTheme.value = ShareUtils.getInstance(this).getBoolean("long", false)
     }
 
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        themeViewModel.isDarkTheme.value?.let {
+            ShareUtils.getInstance(this).putBoolean(
+                "long",
+                it
+            )
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            ComposeExampleTheme {
+            ComposeExampleTheme(themeViewModel) {
 
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -40,12 +46,9 @@ class MainActivity : ComponentActivity() {
 //                        .fillMaxWidth()
 //                        .fillMaxHeight()
                 ) {
-                    Greeting(themeViewModel) {
-                        themeViewModel.isDarkTheme.postValue(!themeViewModel.isDarkTheme.value!!)
-                        ShareUtils.getInstance(this).putBoolean(
-                            "long",
-                            themeViewModel.isDarkTheme.value!!
-                        )
+                    Greeting {
+                        Log.d("hblong", "MainActivity.onCreate: change theme")
+                        themeViewModel.isDarkTheme.value = !themeViewModel.isDarkTheme.value!!
                     }
                 }
             }
@@ -54,7 +57,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(themeViewModel: ThemeViewModel, onClick: () -> Unit) {
+fun Greeting(onClick: () -> Unit) {
 //    val name = themeViewModel.isDarkTheme.observeAsState()
 //
 //    Button(onClick = onClick) {
@@ -67,20 +70,30 @@ fun Greeting(themeViewModel: ThemeViewModel, onClick: () -> Unit) {
 //        )
 //    }
 
-    Text(text = "LongHb", modifier = Modifier.background(Color.Red))
+    Text(
+        text = "LongHb",
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.primary)
+            .clickable {
+                onClick()
+            },
+        color = MaterialTheme.colorScheme.onPrimary,
+        fontSize = MaterialTheme.typography.bodyLarge.fontSize
+
+    )
 
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    ComposeExampleTheme {
-        Surface(
-            color = White,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-//            Greeting()
-        }
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview() {
+//    ComposeExampleTheme {
+//        Surface(
+//            color = White,
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+////            Greeting()
+//        }
+//    }
+//}
